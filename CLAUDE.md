@@ -16,7 +16,13 @@ A Shelly Plug US Gen4 (model S4PL-00116US) powers the office popcorn maker. A sc
 
 ## Deploying
 
-`./deploy.sh` reads `.env`, stores the webhook in KVS, creates or updates the `popcorn-alert` script in ~1 KB chunks, enables it on boot, starts it, and sets the switch `initial_state` to `on`. Rerun it after any change to `popcorn-alert.js`.
+Deploy by hand in the plug's web UI at `http://192.168.0.67`:
+
+1. Under Advanced → KVS, add key `slack_webhook` with the URL from `.env`.
+2. Under Scripts, create a script named `popcorn-alert`, paste in `popcorn-alert.js`, save, enable run on startup, and start it.
+3. Under Settings for the output, set power-on default to on so the plug comes back after outages.
+
+After any change to `popcorn-alert.js`, paste the new code into the script and restart it.
 
 ## Remaining tasks
 
