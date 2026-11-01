@@ -11,7 +11,9 @@ A Shelly Plug US Gen4 (model S4PL-00116US) powers the office popcorn maker. A sc
 ## How the script works
 
 - Listens for `switch:0` status changes via `Shelly.addStatusHandler`
-- When `apower` crosses above `THRESHOLD_W`, it POSTs to Slack (5-minute cooldown between alerts)
+- When `apower` crosses above `THRESHOLD_W`, it POSTs "Someone is making popcorn!" to Slack
+- When `apower` drops back below `THRESHOLD_W` after at least 60 seconds above it, it POSTs "Popcorn is ready!"
+- Each message has its own 15-minute cooldown
 - Reads the webhook URL from the plug's KVS store (key `slack_webhook`) so the URL stays out of the code
 
 ## Deploying
