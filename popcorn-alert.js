@@ -1,4 +1,4 @@
-let THRESHOLD_W = 3;
+let THRESHOLD_W = 400;
 let COOLDOWN_S = 900;
 let MIN_RUN_S = 60;
 let SWITCH_ID = 0;
@@ -14,34 +14,23 @@ function uptime() {
   return Shelly.getComponentStatus("sys").uptime;
 }
 
-function loadWebhook() {
-  Shelly.call("KVS.Get", { key: "slack_webhook" }, function (res, errCode, errMsg) {
-    if (errCode !== 0 || !res || !res.value) {
-      print("popcorn-alert: slack_webhook missing from KVS: " + errMsg);
-      return;
-    }
-    webhook = res.value;
-    print("popcorn-alert: webhook loaded");
-  });
-}
-
 function postToSlack(text) {
   print("popcorn-alert: would post: " + text);
-  // if (!webhook) {
-  //   print("popcorn-alert: no webhook, skipping alert");
-  //   return;
-  // }
-  // Shelly.call(
-  //   "HTTP.POST",
-  //   { url: webhook, body: JSON.stringify({ text: text }), content_type: "application/json", timeout: 10 },
-  //   function (res, errCode, errMsg) {
-  //     if (errCode !== 0) {
-  //       print("popcorn-alert: Slack POST failed: " + errMsg);
-  //       return;
-  //     }
-  //     print("popcorn-alert: Slack responded " + res.code);
-  //   }
-  // );
+  if (!webhook) {
+    print("popcorn-alert: no webhook, skipping alert");
+    return;
+  }
+  Shelly.call(
+    "HTTP.POST",
+    { url: webhook, body: JSON.stringify({ text: text }), content_type: "application/json", timeout: 10 },
+    function (res, errCode, errMsg) {
+      if (errCode !== 0) {
+        print("popcorn-alert: Slack POST failed: " + errMsg);
+        return;
+      }
+      print("popcorn-alert: Slack responded " + res.code);
+    }
+  );
 }
 
 function onPopcornStarted(watts, now) {
@@ -52,7 +41,7 @@ function onPopcornStarted(watts, now) {
     return;
   }
   lastStartAlertAt = now;
-  postToSlack(":popcorn: Someone is making popcorn! (" + watts + " W)");
+  postToSlack("Someone is making popcorn!");
 }
 
 function onPopcornStopped(now) {
@@ -67,7 +56,7 @@ function onPopcornStopped(now) {
     return;
   }
   lastReadyAlertAt = now;
-  postToSlack(":popcorn: Popcorn is ready!");
+  postToSlack("Popcorn is ready!");
 }
 
 Shelly.addStatusHandler(function (event) {
@@ -80,5 +69,4 @@ Shelly.addStatusHandler(function (event) {
   running = nowRunning;
 });
 
-loadWebhook();
 print("popcorn-alert: watching switch:" + SWITCH_ID + " above " + THRESHOLD_W + " W");
